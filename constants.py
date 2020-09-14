@@ -4,6 +4,8 @@ framesPerCell = [48, 43, 38, 33, 28, 23, 18, 13, 8, 6,
 	5, 5, 5, 4, 4, 4, 3, 3, 3, 2, 2,
 	2, 2, 2, 2, 2, 2, 2, 2, 1]
 
+spawnPos = [0, 5]
+
 PURPLE = (180, 40, 140)
 BLUE = (40, 80, 230)
 GREEN = (40, 225, 20)
@@ -11,6 +13,8 @@ YELLOW = (230, 230, 0)
 RED = (230, 0, 0)
 ORANGE = (240, 150, 10)
 CYAN = (0, 200, 230)
+
+colors = (PURPLE, BLUE, GREEN, YELLOW, RED, ORANGE, CYAN)
 
 orientations = (
 	( # orientations[0] -- T
