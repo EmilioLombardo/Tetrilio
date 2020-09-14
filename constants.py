@@ -1,5 +1,10 @@
-width = 1080
-height = int(width*3/4)
+import pygame
+
+pygame.init()
+displayInfo = pygame.display.Info()
+
+width = displayInfo.current_w
+height = displayInfo.current_h
 print(width, "x", height)
 
 COLS = 10

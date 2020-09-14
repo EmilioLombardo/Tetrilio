@@ -66,7 +66,7 @@ def main():
 
 	# Initialise screen
 	pygame.init()
-	screen = pygame.display.set_mode((c.width, c.height))
+	screen = pygame.display.set_mode((0, 0), pygame.FULLSCREEN)
 	pygame.display.set_caption("Tetrilio")
 
 	# Fill background
@@ -84,7 +84,8 @@ def main():
 
 	drawGrid(bg, (100, 100, 100))
 
-	while True: # This is the game-loop
+	running = True
+	while running: # This is the game-loop
 
 		#allows user to exit the screen
 		events = pygame.event.get()
@@ -92,11 +93,19 @@ def main():
 			if event.type == pygame.QUIT:
 				pygame.quit()
 				sys.exit()
+			elif event.type == pygame.KEYDOWN:
+				if event.key == pygame.K_ESCAPE:
+					running = False
+					pygame.quit()
+					sys.exit()
+
+		bg.fill((0, 0, 0))
+		drawGrid(bg, (100,100,100))
 
 		tetrimino = Tetrimino(6, c.spawnPos)
 		tetrimino.draw(bg)
 
-		# Update screen. This code should be ran every frame
+		# Update screen
 		screen.blit(bg, (0, 0))
 		pygame.display.flip()
 
