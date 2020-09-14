@@ -10,14 +10,16 @@ class Tetrimino:
 		self.typeID = typeID
 		self.centrePos = centrePos
 
+		self.landed = False
+
 		self.color = c.colors[typeID]
 		self.orientations = c.orientations[typeID]
 
 		self.minos = [] # list of coordinates for each mino
 
 		for i in range(len(self.orientations[0])):
-			coords = self.orientations[0][i]
-			self.minos.append(coords)
+			relativeCoords = self.orientations[0][i]
+			self.minos.append(relativeCoords)
 
 	def draw(self, surface):
 
@@ -30,8 +32,24 @@ class Tetrimino:
 				(pixelPos[0], pixelPos[1], c.cellSize+1, c.cellSize+1)
 				)
 
-	def fall(self):
-		pass
+	def fall(self, deadMinos):
+
+		# Move all minoes down one row
+		self.minos = [[m[0], m[1] + 1] for m in self.minos]
+
+		# Check for collision
+		for m in self.minos:
+			if m[1] + 1 > c.ROWS:
+				# Move all minoes back up
+				self.minos = [[m[0], m[1] - 1] for m in self.minos]
+				self.landed = True
+				return
+			for dead in deadMinos:
+				if m[1] + 1 > dead[1]:
+					# Move all minoes back up
+					self.minos = [[m[0], m[1] - 1] for m in self.minos]
+					self.landed = True
+					return
 
 	def move(self):
 		pass
@@ -72,15 +90,19 @@ def main():
 	bg = bg.convert()
 	bg.fill((0, 0, 0))
 
-	# Blit everything to the screen
-	screen.blit(bg, (0, 0))
-	pygame.display.flip()
-
 	FPS = 60
 	clock = pygame.time.Clock()
 	frameCounter = 0
+	level = 9
+	deadMinos = []
 
 	drawGrid(bg, (100, 100, 100))
+	tetrimino = Tetrimino(0, c.spawnPos)
+	tetrimino.draw(bg)
+
+	# Blit everything to the screen
+	screen.blit(bg, (0, 0))
+	pygame.display.flip()
 
 	running = True
 	while running: # This is the game-loop
@@ -100,8 +122,26 @@ def main():
 		bg.fill((0, 0, 0))
 		drawGrid(bg, (100,100,100))
 
-		tetrimino = Tetrimino(6, c.spawnPos)
+		if frameCounter % c.framesPerCell[level] == 0:
+			tetrimino.fall(deadMinos)
+
+		if tetrimino.landed:
+			for m in tetrimino.minos:
+				minoX = m[0] + tetrimino.centrePos[0]
+				minoY = m[1] + tetrimino.centrePos[1]
+
+				deadMinos.append((minoX, minoY, tetrimino.color))
+			del tetrimino
+			tetrimino = Tetrimino(0, c.spawnPos) # Spawn new tetrimino
+
 		tetrimino.draw(bg)
+		for mino in deadMinos:
+			if mino is not None:
+				pixelPos = gridToPixelPos(mino[0], mino[1])
+				pygame.draw.rect(
+					bg, mino[2],
+					(pixelPos[0], pixelPos[1], c.cellSize+1, c.cellSize+1)
+					)
 
 		# Update screen
 		screen.blit(bg, (0, 0))
