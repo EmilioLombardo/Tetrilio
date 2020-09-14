@@ -17,6 +17,32 @@ fieldHeight = 2 * fieldWidth
 fieldPos = ((width // 2) - (fieldWidth // 2), (height // 2) - (fieldHeight // 2))
 cellSize = fieldWidth // COLS
 
+class Tetrimino:
+	def __init__(self, typeID, centerPos):
+		self.typeID = typeID
+		self.centerPos = centerPos
+
+		self.color = c.colors[typeID]
+		self.orientations = c.orientations[typeID]
+
+		self.minos = [] # list of coordinates for each mino
+
+		for i in range(len(orientations)):
+			orientation = orientations[i]
+			self.minos.append(orientation)
+
+	def draw(self, surface):
+		pass
+
+	def fall(self):
+		pass
+
+	def move(self):
+		pass
+
+	def rotate(self):
+		pass
+
 def drawGrid(surface, color):
 
 	x = fieldPos[0]
