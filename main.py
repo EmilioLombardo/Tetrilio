@@ -18,18 +18,18 @@ fieldPos = ((width // 2) - (fieldWidth // 2), (height // 2) - (fieldHeight // 2)
 cellSize = fieldWidth // COLS
 
 class Tetrimino:
-	def __init__(self, typeID, centerPos):
+	def __init__(self, typeID, centrePos):
 		self.typeID = typeID
-		self.centerPos = centerPos
+		self.centrePos = centrePos
 
 		self.color = c.colors[typeID]
 		self.orientations = c.orientations[typeID]
 
 		self.minos = [] # list of coordinates for each mino
 
-		for i in range(len(orientations)):
-			orientation = orientations[i]
-			self.minos.append(orientation)
+		for i in range(len(self.orientations[0])):
+			coords = self.orientations[0][i]
+			self.minos.append(coords)
 
 	def draw(self, surface):
 		pass
