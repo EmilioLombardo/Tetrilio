@@ -1,5 +1,4 @@
 import sys
-
 import pygame
 from pygame.locals import *
 
@@ -21,10 +20,9 @@ class Tetrimino:
 			self.minos.append(coords)
 
 	def draw(self, surface):
+
 		for m in self.minos:
-			gridPos = [
-				m[i] + self.centrePos[i] for i in range(2)
-				]
+			gridPos = [m[i] + self.centrePos[i] for i in range(2)]
 			pixelPos = gridToPixelPos(*gridPos)
 
 			pygame.draw.rect(
