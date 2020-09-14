@@ -5,11 +5,34 @@ from pygame.locals import *
 
 import constants as c
 
+width = 1080
+height = int(width*3/4)
+print(width, "x", height)
+
+COLS = 10
+ROWS = 20
+fieldWidth = 300
+fieldHeight = 2 * fieldWidth
+# (x, y) for top-left corner of playing field:
+fieldPos = ((width // 2) - (fieldWidth // 2), (height // 2) - (fieldHeight // 2))
+cellSize = fieldWidth // COLS
+
+def drawGrid(surface, color):
+
+	x = fieldPos[0]
+	y = fieldPos[1]
+
+	for i in range(COLS+1):
+		pygame.draw.line(surface, color,
+			(x, fieldPos[1]), (x, fieldPos[1] + fieldHeight))
+		x += cellSize
+
+	for l in range(ROWS+1):
+		pygame.draw.line(surface, color,
+			(fieldPos[0], y), (fieldPos[0] + fieldWidth, y))
+		y += cellSize
 
 def main():
-	width = 1080
-	height = int(width*3/4)
-	print(width, "x", height)
 
 	# Initialise screen
 	pygame.init()
@@ -28,6 +51,8 @@ def main():
 	FPS = 60
 	clock = pygame.time.Clock()
 	frameCounter = 0
+
+	drawGrid(bg, (100, 100, 100))
 
 	while True: # This is the game-loop
 
