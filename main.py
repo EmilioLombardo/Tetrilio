@@ -32,7 +32,16 @@ class Tetrimino:
 			self.minos.append(coords)
 
 	def draw(self, surface):
-		pass
+		for m in self.minos:
+			gridPos = [
+				m[i] + self.centrePos[i] for i in range(2)
+				]
+			pixelPos = gridToPixelPos(*gridPos)
+
+			pygame.draw.rect(
+				surface, self.color,
+				(pixelPos[0], pixelPos[1], cellSize+1, cellSize+1)
+				)
 
 	def fall(self):
 		pass
@@ -95,6 +104,8 @@ def main():
 				pygame.quit()
 				sys.exit()
 
+		tetrimino = Tetrimino(6, c.spawnPos)
+		tetrimino.draw(bg)
 
 		# Update screen. This code should be ran every frame
 		screen.blit(bg, (0, 0))
