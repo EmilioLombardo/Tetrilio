@@ -1,3 +1,15 @@
+width = 1080
+height = int(width*3/4)
+print(width, "x", height)
+
+COLS = 10
+ROWS = 20
+fieldWidth = 300
+fieldHeight = 2 * fieldWidth
+# (x, y) for top-left corner of playing field:
+fieldPos = ((width // 2) - (fieldWidth // 2), (height // 2) - (fieldHeight // 2))
+cellSize = fieldWidth // COLS
+
 DAS = 16 # Auto-shift delay (in frames)
 ARR = 6 # Auto repeat rate (in frames)
 framesPerCell = [48, 43, 38, 33, 28, 23, 18, 13, 8, 6,

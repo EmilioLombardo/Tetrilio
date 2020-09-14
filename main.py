@@ -5,17 +5,6 @@ from pygame.locals import *
 
 import constants as c
 
-width = 1080
-height = int(width*3/4)
-print(width, "x", height)
-
-COLS = 10
-ROWS = 20
-fieldWidth = 300
-fieldHeight = 2 * fieldWidth
-# (x, y) for top-left corner of playing field:
-fieldPos = ((width // 2) - (fieldWidth // 2), (height // 2) - (fieldHeight // 2))
-cellSize = fieldWidth // COLS
 
 class Tetrimino:
 	def __init__(self, typeID, centrePos):
