@@ -43,6 +43,12 @@ class Tetrimino:
 	def rotate(self):
 		pass
 
+
+def gridToPixelPos(gridX, gridY):
+	pixelX = cellSize * gridX + fieldPos[0]
+	pixelY = cellSize * gridY + fieldPos[1]
+	return [pixelX, pixelY]
+
 def drawGrid(surface, color):
 
 	x = fieldPos[0]
