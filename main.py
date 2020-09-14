@@ -29,7 +29,7 @@ class Tetrimino:
 
 			pygame.draw.rect(
 				surface, self.color,
-				(pixelPos[0], pixelPos[1], cellSize+1, cellSize+1)
+				(pixelPos[0], pixelPos[1], c.cellSize+1, c.cellSize+1)
 				)
 
 	def fall(self):
@@ -41,32 +41,32 @@ class Tetrimino:
 	def rotate(self):
 		pass
 
-
+# Translates grid-coords into pixel-coords
 def gridToPixelPos(gridX, gridY):
-	pixelX = cellSize * gridX + fieldPos[0]
-	pixelY = cellSize * gridY + fieldPos[1]
+	pixelX = c.cellSize * gridX + c.fieldPos[0]
+	pixelY = c.cellSize * gridY + c.fieldPos[1]
 	return [pixelX, pixelY]
 
 def drawGrid(surface, color):
 
-	x = fieldPos[0]
-	y = fieldPos[1]
+	x = c.fieldPos[0]
+	y = c.fieldPos[1]
 
-	for i in range(COLS+1):
+	for i in range(c.COLS+1):
 		pygame.draw.line(surface, color,
-			(x, fieldPos[1]), (x, fieldPos[1] + fieldHeight))
-		x += cellSize
+			(x, c.fieldPos[1]), (x, c.fieldPos[1] + c.fieldHeight))
+		x += c.cellSize
 
-	for l in range(ROWS+1):
+	for l in range(c.ROWS+1):
 		pygame.draw.line(surface, color,
-			(fieldPos[0], y), (fieldPos[0] + fieldWidth, y))
-		y += cellSize
+			(c.fieldPos[0], y), (c.fieldPos[0] + c.fieldWidth, y))
+		y += c.cellSize
 
 def main():
 
 	# Initialise screen
 	pygame.init()
-	screen = pygame.display.set_mode((width, height))
+	screen = pygame.display.set_mode((c.width, c.height))
 	pygame.display.set_caption("Tetrilio")
 
 	# Fill background
