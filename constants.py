@@ -11,8 +11,10 @@ COLS = 10
 ROWS = 20
 fieldWidth = 300
 fieldHeight = 2 * fieldWidth
-# (x, y) for top-left corner of playing field:
-fieldPos = ((width // 2) - (fieldWidth // 2), (height // 2) - (fieldHeight // 2))
+fieldPos = ( # (x, y) for top-left corner of playing field
+	(width // 2) - (fieldWidth // 2),
+	(height // 2) - (fieldHeight // 2)
+	)
 cellSize = fieldWidth // COLS
 
 DAS = 16 # Auto-shift delay (in frames)
@@ -33,7 +35,7 @@ CYAN = (0, 200, 230)
 
 colors = (PURPLE, BLUE, GREEN, YELLOW, RED, ORANGE, CYAN)
 
-orientations = (
+allOrientations = (
 	( # orientations[0] -- T
 		((-1, 0), (0, 0), (1, 0), (0, 1)), # 02: T down (spawn)
 		((0, -1), (-1, 0), (0, 0), (0, 1)),  # 03: T left
