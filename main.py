@@ -1,4 +1,5 @@
 import sys
+import random
 import pygame
 from pygame.locals import *
 
@@ -6,26 +7,32 @@ import constants as c
 
 
 class Tetrimino:
-	def __init__(self, typeID, centrePos):
+	def __init__(self, typeID, spawnPos):
 		self.typeID = typeID
-		self.centrePos = centrePos
+		self.centrePos = spawnPos.copy()
 
 		self.landed = False
 
 		self.color = c.colors[typeID]
-		self.orientations = c.orientations[typeID]
+		self.orientations = c.allOrientations[typeID]
+		self.orientation = 0 # The current orientation. 0 = spawn orientation
 
-		self.minos = [] # list of coordinates for each mino
+		self.minos = [[], [], [], []] # list of coordinates for each mino
 
-		for i in range(len(self.orientations[0])):
-			relativeCoords = self.orientations[0][i]
-			self.minos.append(relativeCoords)
+		self.updateMinos()
+
+	# Update coords of minos according to orientation and centrePos
+	def updateMinos(self):
+		i = 0
+		for relativeXY in self.orientations[self.orientation]:
+			minoCoords = [a + b for a, b in zip(relativeXY, self.centrePos)]
+			self.minos[i] = minoCoords
+			i += 1
 
 	def draw(self, surface):
 
 		for m in self.minos:
-			gridPos = [m[i] + self.centrePos[i] for i in range(2)]
-			pixelPos = gridToPixelPos(*gridPos)
+			pixelPos = gridToPixelPos(*m)
 
 			pygame.draw.rect(
 				surface, self.color,
@@ -35,21 +42,29 @@ class Tetrimino:
 	def fall(self, deadMinos):
 
 		# Move all minoes down one row
-		self.minos = [[m[0], m[1] + 1] for m in self.minos]
+		self.centrePos[1] += 1
+		self.updateMinos()
 
 		# Check for collision
 		for m in self.minos:
 			if m[1] + 1 > c.ROWS:
 				# Move all minoes back up
-				self.minos = [[m[0], m[1] - 1] for m in self.minos]
+				self.centrePos[1] -= 1
+				self.updateMinos()
 				self.landed = True
 				return
+
+			self.landed = False
+
 			for dead in deadMinos:
 				if m[1] + 1 > dead[1]:
 					# Move all minoes back up
-					self.minos = [[m[0], m[1] - 1] for m in self.minos]
+					self.centrePos[1] -= 1
+					self.updateMinos()
 					self.landed = True
 					return
+
+				self.landed = False
 
 	def move(self):
 		pass
@@ -97,7 +112,7 @@ def main():
 	deadMinos = []
 
 	drawGrid(bg, (100, 100, 100))
-	tetrimino = Tetrimino(0, c.spawnPos)
+	tetrimino = Tetrimino(random.randint(0, 6), c.spawnPos)
 	tetrimino.draw(bg)
 
 	# Blit everything to the screen
@@ -122,26 +137,25 @@ def main():
 		bg.fill((0, 0, 0))
 		drawGrid(bg, (100,100,100))
 
+		if tetrimino.landed:
+			for m in tetrimino.minos:
+				# (x, y, color)
+				deadMinos.append([m[0], m[1], tetrimino.color])
+
+			# Spawn new tetrimino
+			del tetrimino
+			tetrimino = Tetrimino(random.randint(0, 6), c.spawnPos)
+
 		if frameCounter % c.framesPerCell[level] == 0:
 			tetrimino.fall(deadMinos)
 
-		if tetrimino.landed:
-			for m in tetrimino.minos:
-				minoX = m[0] + tetrimino.centrePos[0]
-				minoY = m[1] + tetrimino.centrePos[1]
-
-				deadMinos.append((minoX, minoY, tetrimino.color))
-			del tetrimino
-			tetrimino = Tetrimino(0, c.spawnPos) # Spawn new tetrimino
-
 		tetrimino.draw(bg)
-		for mino in deadMinos:
-			if mino is not None:
-				pixelPos = gridToPixelPos(mino[0], mino[1])
-				pygame.draw.rect(
-					bg, mino[2],
-					(pixelPos[0], pixelPos[1], c.cellSize+1, c.cellSize+1)
-					)
+		for dead in deadMinos:
+			pixelPos = gridToPixelPos(dead[0], dead[1])
+			pygame.draw.rect(
+				bg, dead[2],
+				(pixelPos[0], pixelPos[1], c.cellSize+1, c.cellSize+1)
+				)
 
 		# Update screen
 		screen.blit(bg, (0, 0))
