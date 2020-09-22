@@ -17,7 +17,9 @@ class Tetrimino:
 		self.orientations = c.allOrientations[typeID]
 		self.orientationIndex = 0 # The current orientation. 0 = spawn orientation
 
-		self.minos = [[], [], [], []] # list of coordinates for each mino
+		self.minos = [ # 2D list with of x and y coordinates for each mino
+			[] for _ in range(len(self.orientations[self.orientationIndex]))
+			]
 
 		self.updateMinos()
 
