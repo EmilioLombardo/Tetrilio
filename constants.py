@@ -53,8 +53,8 @@ allOrientations = (
 		((1, -1), (0, 0), (1, 0), (0, 1)) # 09: Z vertical
 		),
 	( # orientations[3] -- O
-		((-1, 0), (0, 0), (-1, 1), (0, 1)) # 0A: O (spawn)
-	),
+		((-1, 0), (0, 0), (-1, 1), (0, 1)), # 0A: O (spawn)
+		),
 	( # orientations[4] -- S
 		((0, 0), (1, 0), (-1, 1), (0, 1)), # 0B: S horizontal (spawn)
 		((0, -1), (0, 0), (1, 0), (1, 1)) # 0C: S vertical
