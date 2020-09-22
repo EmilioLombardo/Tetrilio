@@ -128,7 +128,7 @@ def main():
 	running = True
 	while running: # This is the game-loop
 
-		#allows user to exit the screen
+		# Allows user to exit the screen
 		events = pygame.event.get()
 		for event in events:
 			if event.type == pygame.QUIT:
@@ -140,7 +140,7 @@ def main():
 					sys.exit()
 
 		bg.fill((0, 0, 0))
-		drawGrid(bg, (100,100,100))
+		drawGrid(bg, (60, 60, 60))
 
 		for event in events:
 			if event.type == pygame.KEYDOWN:
@@ -160,6 +160,7 @@ def main():
 		if frameCounter % c.framesPerCell[level] == 0:
 			tetrimino.fall(deadMinos)
 
+		# Draw tetrimino and dead minos:
 		tetrimino.draw(bg)
 		for dead in deadMinos:
 			pixelPos = gridToPixelPos(dead[0], dead[1])
