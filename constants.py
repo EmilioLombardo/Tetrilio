@@ -33,7 +33,7 @@ RED = (230, 0, 0)
 ORANGE = (240, 150, 10)
 CYAN = (0, 200, 230)
 
-colors = (PURPLE, BLUE, GREEN, YELLOW, RED, ORANGE, CYAN)
+colours = (PURPLE, BLUE, GREEN, YELLOW, RED, ORANGE, CYAN)
 
 allOrientations = (
 	( # orientations[0] -- T

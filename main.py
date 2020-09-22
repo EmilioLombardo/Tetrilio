@@ -13,7 +13,7 @@ class Tetrimino:
 
 		self.landed = False
 
-		self.color = c.colors[typeID]
+		self.colour = c.colours[typeID]
 		self.orientations = c.allOrientations[typeID]
 		self.orientationIndex = 0 # The current orientation. 0 = spawn orientation
 
@@ -35,13 +35,13 @@ class Tetrimino:
 			pixelPos = gridToPixelPos(*m)
 
 			pygame.draw.rect(
-				surface, self.color,
-				(pixelPos[0], pixelPos[1], c.cellSize+1, c.cellSize+1)
+				surface, self.colour,
+				(pixelPos[0], pixelPos[1], c.cellSize, c.cellSize)
 				)
 
 	def fall(self, deadMinos):
 
-		# Move all minoes down one row
+		# Move all minos down one row
 		self.centrePos[1] += 1
 		self.updateMinos()
 
@@ -50,7 +50,7 @@ class Tetrimino:
 		# Check for collision
 		for m in self.minos:
 			if m[1] + 1 > c.ROWS:
-				# Move all minoes back up
+				# Move all minos back up
 				self.centrePos[1] -= 1
 				self.updateMinos()
 				self.landed = True
@@ -58,8 +58,7 @@ class Tetrimino:
 
 			for dead in deadMinos:
 				if m[:2] == dead[:2]:
-					# Move all minoes back up
-					print(m[:2], dead[:2])
+					# Move all minos back up
 					self.centrePos[1] -= 1
 					self.updateMinos()
 					self.landed = True
@@ -83,18 +82,18 @@ def gridToPixelPos(gridX, gridY):
 	pixelY = c.cellSize * gridY + c.fieldPos[1]
 	return [pixelX, pixelY]
 
-def drawGrid(surface, color):
+def drawGrid(surface, colour):
 
 	x = c.fieldPos[0]
 	y = c.fieldPos[1]
 
 	for i in range(c.COLS+1):
-		pygame.draw.line(surface, color,
+		pygame.draw.line(surface, colour,
 			(x, c.fieldPos[1]), (x, c.fieldPos[1] + c.fieldHeight))
 		x += c.cellSize
 
 	for l in range(c.ROWS+1):
-		pygame.draw.line(surface, color,
+		pygame.draw.line(surface, colour,
 			(c.fieldPos[0], y), (c.fieldPos[0] + c.fieldWidth, y))
 		y += c.cellSize
 
@@ -150,8 +149,7 @@ def main():
 
 		if tetrimino.landed:
 			for m in tetrimino.minos:
-				# (x, y, color)
-				deadMinos.append([m[0], m[1], tetrimino.color])
+				deadMinos.append([m[0], m[1], tetrimino.colour]) # (x, y, colour)
 
 			# Spawn new tetrimino
 			del tetrimino
