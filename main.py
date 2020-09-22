@@ -69,14 +69,33 @@ class Tetrimino:
 	def move(self):
 		pass
 
-	def rotate(self, direction):
+	def rotate(self, direction, deadMinos):
+		prevOrientation = self.orientationIndex
+
 		if direction.lower() == "cw":
 			self.orientationIndex += 1
-		elif direction.lower() == "ccw":
-			self.orientationIndex -= 1
+			self.orientationIndex %= len(self.orientations)
+			self.updateMinos()
 
-		self.orientationIndex %= len(self.orientations)
-		self.updateMinos()
+		if direction.lower() == "ccw":
+			self.orientationIndex -= 1
+			self.orientationIndex %= len(self.orientations)
+			self.updateMinos()
+
+		# Check for collision
+		for m in self.minos:
+			if (m[0] >= c.COLS) or (m[0] < 0) or (m[1] >= c.ROWS):
+				# Move all minos back
+				self.orientationIndex = prevOrientation
+				self.updateMinos()
+				return
+
+			for dead in deadMinos:
+				if m[:2] == dead[:2]:
+					# Move all minos back
+					self.orientationIndex = prevOrientation
+					self.updateMinos()
+					return
 
 # Translates grid-coords into pixel-coords
 def gridToPixelPos(gridX, gridY):
@@ -144,11 +163,13 @@ def main():
 
 		for event in events:
 			if event.type == pygame.KEYDOWN:
-				if event.key == pygame.K_i:
-					tetrimino.rotate("cw")
-				if event.key == pygame.K_k:
-					tetrimino.rotate("ccw")
 
+				# Rotation:
+				if event.key == pygame.K_k:
+					tetrimino.rotate("cw", deadMinos)
+
+				if event.key == pygame.K_j:
+					tetrimino.rotate("ccw", deadMinos)
 		if tetrimino.landed:
 			for m in tetrimino.minos:
 				deadMinos.append([m[0], m[1], tetrimino.colour]) # (x, y, colour)
