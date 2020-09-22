@@ -15,7 +15,7 @@ class Tetrimino:
 
 		self.color = c.colors[typeID]
 		self.orientations = c.allOrientations[typeID]
-		self.orientation = 0 # The current orientation. 0 = spawn orientation
+		self.orientationIndex = 0 # The current orientation. 0 = spawn orientation
 
 		self.minos = [[], [], [], []] # list of coordinates for each mino
 
@@ -24,7 +24,7 @@ class Tetrimino:
 	# Update coords of minos according to orientation and centrePos
 	def updateMinos(self):
 		i = 0
-		for relativeXY in self.orientations[self.orientation]:
+		for relativeXY in self.orientations[self.orientationIndex]:
 			minoCoords = [a + b for a, b in zip(relativeXY, self.centrePos)]
 			self.minos[i] = minoCoords
 			i += 1
@@ -45,6 +45,8 @@ class Tetrimino:
 		self.centrePos[1] += 1
 		self.updateMinos()
 
+		self.landed = False
+
 		# Check for collision
 		for m in self.minos:
 			if m[1] + 1 > c.ROWS:
@@ -54,17 +56,14 @@ class Tetrimino:
 				self.landed = True
 				return
 
-			self.landed = False
-
 			for dead in deadMinos:
-				if m[1] + 1 > dead[1]:
+				if m[:2] == dead[:2]:
 					# Move all minoes back up
+					print(m[:2], dead[:2])
 					self.centrePos[1] -= 1
 					self.updateMinos()
 					self.landed = True
 					return
-
-				self.landed = False
 
 	def move(self):
 		pass
