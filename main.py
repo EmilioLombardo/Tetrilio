@@ -66,8 +66,31 @@ class Tetrimino:
 					self.landed = True
 					return
 
-	def move(self):
-		pass
+	def shift(self, direction, deadMinos):
+		prevPos = self.centrePos[0]
+
+		if direction.lower() == "left":
+			self.centrePos[0] -= 1
+			self.updateMinos()
+
+		if direction.lower() == "right":
+			self.centrePos[0] += 1
+			self.updateMinos()
+
+		# Check for collision
+		for m in self.minos:
+			if m[0] + 1 > c.COLS or m[0] < 0:
+				# Move all minos back
+				self.centrePos[0] = prevPos
+				self.updateMinos()
+				return
+
+			for dead in deadMinos:
+				if m[:2] == dead[:2]:
+					# Move all minos back
+					self.centrePos[0] = prevPos
+					self.updateMinos()
+					return
 
 	def rotate(self, direction, deadMinos):
 		prevOrientation = self.orientationIndex
@@ -133,6 +156,7 @@ def main():
 	FPS = 60
 	clock = pygame.time.Clock()
 	frameCounter = 0
+	DAScounter = 0
 	level = 9
 	deadMinos = []
 
@@ -170,6 +194,46 @@ def main():
 
 				if event.key == pygame.K_j:
 					tetrimino.rotate("ccw", deadMinos)
+
+				# Shifting:
+				if event.key == pygame.K_a:
+					prevPos = tetrimino.centrePos.copy()
+					tetrimino.shift("left", deadMinos)
+					currPos = tetrimino.centrePos.copy()
+					DAScounter = 0 if currPos != prevPos else c.DAS
+					# Charge DAS if tetrimino hits wall or dead mino
+
+				if event.key == pygame.K_d:
+					prevPos = tetrimino.centrePos.copy()
+					tetrimino.shift("right", deadMinos)
+					currPos = tetrimino.centrePos.copy()
+					DAScounter = 0 if currPos != prevPos else c.DAS
+					# Charge DAS if tetrimino hits wall or dead mino
+
+			# If one of the shifting keys are released, reset DAS counter
+			if event.type == pygame.KEYUP and event.key in [pygame.K_a, pygame.K_d]:
+				DAScounter = 0
+
+		# Manage DAS:
+		keys = pygame.key.get_pressed()
+
+		if keys[pygame.K_a]:
+			DAScounter += 1
+			if DAScounter == c.DAS:
+				prevPos = tetrimino.centrePos.copy()
+				tetrimino.shift("left", deadMinos)
+				currPos = tetrimino.centrePos.copy()
+				DAScounter = c.DAS - c.ARR
+
+		if keys[pygame.K_d]:
+			DAScounter += 1
+			if DAScounter == c.DAS:
+				prevPos = tetrimino.centrePos.copy()
+				tetrimino.shift("right", deadMinos)
+				currPos = tetrimino.centrePos.copy()
+				DAScounter = c.DAS - c.ARR
+
+		# Check if tetrimino has landed:
 		if tetrimino.landed:
 			for m in tetrimino.minos:
 				deadMinos.append([m[0], m[1], tetrimino.colour]) # (x, y, colour)
@@ -187,7 +251,7 @@ def main():
 			pixelPos = gridToPixelPos(dead[0], dead[1])
 			pygame.draw.rect(
 				bg, dead[2],
-				(pixelPos[0], pixelPos[1], c.cellSize+1, c.cellSize+1)
+				(pixelPos[0], pixelPos[1], c.cellSize, c.cellSize)
 				)
 
 		# Update screen
