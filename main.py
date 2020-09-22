@@ -103,7 +103,7 @@ def main():
 
 	# Initialise screen
 	pygame.init()
-	screen = pygame.display.set_mode((0, 0), pygame.FULLSCREEN)
+	screen = pygame.display.set_mode((0, 0), pygame.FULLSCREEN | pygame.DOUBLEBUF)
 	pygame.display.set_caption("Tetrilio")
 
 	# Fill background
