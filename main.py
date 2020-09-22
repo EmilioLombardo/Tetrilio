@@ -68,8 +68,14 @@ class Tetrimino:
 	def move(self):
 		pass
 
-	def rotate(self):
-		pass
+	def rotate(self, direction):
+		if direction.lower() == "cw":
+			self.orientationIndex += 1
+		elif direction.lower() == "ccw":
+			self.orientationIndex -= 1
+
+		self.orientationIndex %= len(self.orientations)
+		self.updateMinos()
 
 # Translates grid-coords into pixel-coords
 def gridToPixelPos(gridX, gridY):
@@ -127,14 +133,20 @@ def main():
 			if event.type == pygame.QUIT:
 				pygame.quit()
 				sys.exit()
-			elif event.type == pygame.KEYDOWN:
-				if event.key == pygame.K_ESCAPE:
+			elif event.type == pygame.KEYDOWN and event.key == pygame.K_ESCAPE:
 					running = False
 					pygame.quit()
 					sys.exit()
 
 		bg.fill((0, 0, 0))
 		drawGrid(bg, (100,100,100))
+
+		for event in events:
+			if event.type == pygame.KEYDOWN:
+				if event.key == pygame.K_i:
+					tetrimino.rotate("cw")
+				if event.key == pygame.K_k:
+					tetrimino.rotate("ccw")
 
 		if tetrimino.landed:
 			for m in tetrimino.minos:
