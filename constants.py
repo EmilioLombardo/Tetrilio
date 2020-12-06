@@ -3,14 +3,16 @@ import pygame
 pygame.init()
 displayInfo = pygame.display.Info()
 
-width = displayInfo.current_w
-height = displayInfo.current_h
+# width = displayInfo.current_w
+width = 640
+# height = displayInfo.current_h
+height = 720
 print(width, "x", height)
 
 COLS = 10
 ROWS = 20
 fieldWidth = 300
-fieldHeight = 2 * fieldWidth
+fieldHeight = (ROWS/COLS) * fieldWidth
 fieldPos = ( # (x, y) for top-left corner of playing field
 	(width // 2) - (fieldWidth // 2),
 	(height // 2) - (fieldHeight // 2)
@@ -19,6 +21,7 @@ cellSize = fieldWidth // COLS
 
 DAS = 16 # Auto-shift delay (in frames)
 ARR = 6 # Auto repeat rate (in frames)
+# Falling speeds for different levels
 framesPerCell = [48, 43, 38, 33, 28, 23, 18, 13, 8, 6,
 	5, 5, 5, 4, 4, 4, 3, 3, 3, 2, 2,
 	2, 2, 2, 2, 2, 2, 2, 2, 1]

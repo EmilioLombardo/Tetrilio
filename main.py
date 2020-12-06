@@ -20,15 +20,17 @@ class Tetrimino:
 		self.minos = [ # 2D list with of x and y coordinates for each mino
 			[] for _ in range(len(self.orientations[self.orientationIndex]))
 			]
+		### Ex.: [[-1, 0], [0, 0], [1, 0], [0, 1]] for T-piece
 
 		self.updateMinos()
 
 	# Update coords of minos according to orientation and centrePos
 	def updateMinos(self):
+
 		i = 0
 		for relativeXY in self.orientations[self.orientationIndex]:
-			minoCoords = [a + b for a, b in zip(relativeXY, self.centrePos)]
-			self.minos[i] = minoCoords
+			newCoords = [a + b for a, b in zip(relativeXY, self.centrePos)]
+			self.minos[i] = newCoords
 			i += 1
 
 	def draw(self, surface):
@@ -51,6 +53,7 @@ class Tetrimino:
 
 		# Check for collision
 		for m in self.minos:
+			# Collision with bottom
 			if m[1] + 1 > c.ROWS:
 				# Move all minos back up
 				self.centrePos[1] -= 1
@@ -58,6 +61,7 @@ class Tetrimino:
 				self.landed = True
 				return
 
+			# Collision with dead minos
 			for dead in deadMinos:
 				if m[:2] == dead[:2]:
 					# Move all minos back up
@@ -79,12 +83,14 @@ class Tetrimino:
 
 		# Check for collision
 		for m in self.minos:
+			# Collision with walls
 			if m[0] + 1 > c.COLS or m[0] < 0:
 				# Move all minos back
 				self.centrePos[0] = prevPos
 				self.updateMinos()
 				return
 
+			# Collision with dead minos
 			for dead in deadMinos:
 				if m[:2] == dead[:2]:
 					# Move all minos back
@@ -107,12 +113,14 @@ class Tetrimino:
 
 		# Check for collision
 		for m in self.minos:
+			# Collision with walls or floor
 			if (m[0] >= c.COLS) or (m[0] < 0) or (m[1] >= c.ROWS):
 				# Move all minos back
 				self.orientationIndex = prevOrientation
 				self.updateMinos()
 				return
 
+			# Collision with dead minos
 			for dead in deadMinos:
 				if m[:2] == dead[:2]:
 					# Move all minos back
@@ -131,21 +139,39 @@ def drawGrid(surface, colour):
 	x = c.fieldPos[0]
 	y = c.fieldPos[1]
 
-	for i in range(c.COLS+1):
+	# Vertical lines
+	for _ in range(c.COLS + 1):
 		pygame.draw.line(surface, colour,
 			(x, c.fieldPos[1]), (x, c.fieldPos[1] + c.fieldHeight))
 		x += c.cellSize
 
-	for l in range(c.ROWS+1):
+	# Horisontal lines
+	for _ in range(c.ROWS + 1):
 		pygame.draw.line(surface, colour,
 			(c.fieldPos[0], y), (c.fieldPos[0] + c.fieldWidth, y))
 		y += c.cellSize
+
+def completeRows(deadMinos):
+
+	completeRows = []
+
+	for rowN in range(c.ROWS):
+		deadMinosInRow = [mino[:2] for mino in deadMinos if mino[1] == rowN]
+
+		if len(deadMinosInRow) >= c.COLS:
+			completeRows.append(rowN)
+
+	# Returns a list of which rows are fillled in
+	return completeRows
+
 
 def main():
 
 	# Initialise screen
 	pygame.init()
-	screen = pygame.display.set_mode((0, 0), pygame.FULLSCREEN | pygame.DOUBLEBUF)
+	flags = pygame.DOUBLEBUF #| pygame.FULLSCREEN
+	screen = pygame.display.set_mode((0, 0), flags)
+	screen = pygame.display.set_mode((c.width, c.height), flags)
 	pygame.display.set_caption("Tetrilio")
 
 	# Fill background
@@ -156,12 +182,18 @@ def main():
 	FPS = 60
 	clock = pygame.time.Clock()
 	frameCounter = 0
-	DAScounter = 0
-	level = 9
+
+	DAScounter = 0 # For control of horisontal movement
+	level = 18 # Controls falling speed
 	deadMinos = []
 
-	drawGrid(bg, (100, 100, 100))
-	tetrimino = Tetrimino(random.randint(0, 6), c.spawnPos)
+	drawGrid(bg, (60, 60, 60))
+
+	# Create current and next tetrimino
+	nextPiece = Tetrimino(random.randint(0, 6), [13, 10])
+	nextPiece.draw(bg)
+	tetrimino = Tetrimino(random.randint(0, 6), c.spawnPos.copy())
+	# tetrimino.centrePos = c.spawnPos.copy()
 	tetrimino.draw(bg)
 
 	# Blit everything to the screen
@@ -185,6 +217,7 @@ def main():
 		bg.fill((0, 0, 0))
 		drawGrid(bg, (60, 60, 60))
 
+		# Shifting and rotation
 		for event in events:
 			if event.type == pygame.KEYDOWN:
 
@@ -192,7 +225,7 @@ def main():
 				if event.key == pygame.K_k:
 					tetrimino.rotate("cw", deadMinos)
 
-				if event.key == pygame.K_j:
+				elif event.key == pygame.K_j:
 					tetrimino.rotate("ccw", deadMinos)
 
 				# Shifting:
@@ -200,14 +233,15 @@ def main():
 					prevPos = tetrimino.centrePos.copy()
 					tetrimino.shift("left", deadMinos)
 					currPos = tetrimino.centrePos.copy()
-					DAScounter = 0 if currPos != prevPos else c.DAS
+					DAScounter = 0 if currPos != prevPos else c.DAS-c.ARR
 					# Charge DAS if tetrimino hits wall or dead mino
+					# This mechanic replicates the NES version of tetris
 
-				if event.key == pygame.K_d:
+				elif event.key == pygame.K_d:
 					prevPos = tetrimino.centrePos.copy()
 					tetrimino.shift("right", deadMinos)
 					currPos = tetrimino.centrePos.copy()
-					DAScounter = 0 if currPos != prevPos else c.DAS
+					DAScounter = 0 if currPos != prevPos else c.DAS-c.ARR
 					# Charge DAS if tetrimino hits wall or dead mino
 
 			# If one of the shifting keys are released, reset DAS counter
@@ -220,33 +254,62 @@ def main():
 		if keys[pygame.K_a]:
 			DAScounter += 1
 			if DAScounter == c.DAS:
-				prevPos = tetrimino.centrePos.copy()
 				tetrimino.shift("left", deadMinos)
-				currPos = tetrimino.centrePos.copy()
 				DAScounter = c.DAS - c.ARR
 
 		if keys[pygame.K_d]:
 			DAScounter += 1
 			if DAScounter == c.DAS:
-				prevPos = tetrimino.centrePos.copy()
 				tetrimino.shift("right", deadMinos)
-				currPos = tetrimino.centrePos.copy()
 				DAScounter = c.DAS - c.ARR
-
-		# Check if tetrimino has landed:
-		if tetrimino.landed:
-			for m in tetrimino.minos:
-				deadMinos.append([m[0], m[1], tetrimino.colour]) # (x, y, colour)
-
-			# Spawn new tetrimino
-			del tetrimino
-			tetrimino = Tetrimino(random.randint(0, 6), c.spawnPos)
 
 		if frameCounter % c.framesPerCell[level] == 0:
 			tetrimino.fall(deadMinos)
 
-		# Draw tetrimino and dead minos:
+		if tetrimino.landed:
+			for m in tetrimino.minos:
+				deadMinos.append([m[0], m[1], tetrimino.colour]) # [x, y, colour]
+
+			# Spawn new tetrimino at the top
+			tetrimino = nextPiece
+			tetrimino.centrePos = c.spawnPos.copy()
+
+			# Spawn next piece beside the playing field
+			nextPiece = Tetrimino(random.randint(0, 6), [13, 10])
+
+			tetrimino.draw(bg)
+			nextPiece.draw(bg)
+
+			# Check for complete rows and clear them if present
+			completeRows_ = completeRows(deadMinos).copy()
+
+			for rowN in completeRows_:
+
+				# deadMinosInRow = [
+				# 	mino for mino in deadMinos
+				# 	if mino[1] == rowN
+				# 	]
+
+				deadMinosAbove = [
+					mino for mino in deadMinos
+					if mino[1] < rowN
+					]
+
+				# Remove the minos in the filled row from the field
+				deadMinos = [
+					mino for mino in deadMinos
+					if mino[1] != rowN
+					]
+
+				# Move all minos above the filled row down one line
+				for mino in deadMinosAbove:
+					# deadMinos.remove(mino)
+					mino[1] += 1
+					# deadMinos.append(mino)
+
+		# Draw tetrimino, next piece and dead minos
 		tetrimino.draw(bg)
+		nextPiece.draw(bg)
 		for dead in deadMinos:
 			pixelPos = gridToPixelPos(dead[0], dead[1])
 			pygame.draw.rect(
