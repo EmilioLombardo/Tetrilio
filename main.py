@@ -182,10 +182,18 @@ def main():
 	FPS = 60
 	clock = pygame.time.Clock()
 	frameCounter = 0
-
 	DAScounter = 0 # For control of horisontal movement
-	level = 18 # Controls falling speed
+	ARE = 0 # Delay after tetrimino lands (in frames)
+
+	lines = 0
+	startLevel = 15
+	level = startLevel # Controls falling speed
 	deadMinos = []
+	completeRows_ = []
+	clearingLines = False
+
+	# Font
+	font = pygame.font.Font("DIN Alternate Bold.ttf", 28)
 
 	drawGrid(bg, (60, 60, 60))
 
@@ -209,13 +217,12 @@ def main():
 			if event.type == pygame.QUIT:
 				pygame.quit()
 				sys.exit()
-			elif event.type == pygame.KEYDOWN and event.key == pygame.K_ESCAPE:
-					running = False
-					pygame.quit()
-					sys.exit()
 
-		bg.fill((0, 0, 0))
-		drawGrid(bg, (60, 60, 60))
+			elif (event.type == pygame.KEYDOWN and
+				  event.key == pygame.K_ESCAPE):
+				running = False
+				pygame.quit()
+				sys.exit()
 
 		# Shifting and rotation
 		for event in events:
@@ -245,7 +252,9 @@ def main():
 					# Charge DAS if tetrimino hits wall or dead mino
 
 			# If one of the shifting keys are released, reset DAS counter
-			if event.type == pygame.KEYUP and event.key in [pygame.K_a, pygame.K_d]:
+			if (event.type == pygame.KEYUP and
+				event.key in [pygame.K_a, pygame.K_d]):
+
 				DAScounter = 0
 
 		# Manage DAS:
@@ -263,12 +272,16 @@ def main():
 				tetrimino.shift("right", deadMinos)
 				DAScounter = c.DAS - c.ARR
 
+		# Make tetrimino fall
 		if frameCounter % c.framesPerCell[level] == 0:
 			tetrimino.fall(deadMinos)
+		# Faster drop holding S ###
+		elif keys[pygame.K_s] and frameCounter % 2 == 0:
+			tetrimino.fall(deadMinos)
 
-		if tetrimino.landed:
+		if tetrimino.landed == True:
 			for m in tetrimino.minos:
-				deadMinos.append([m[0], m[1], tetrimino.colour]) # [x, y, colour]
+				deadMinos.append([m[0], m[1], tetrimino.colour])
 
 			# Spawn new tetrimino at the top
 			tetrimino = nextPiece
@@ -277,51 +290,109 @@ def main():
 			# Spawn next piece beside the playing field
 			nextPiece = Tetrimino(random.randint(0, 6), [13, 10])
 
-			tetrimino.draw(bg)
-			nextPiece.draw(bg)
-
 			# Check for complete rows and clear them if present
 			completeRows_ = completeRows(deadMinos).copy()
 
-			for rowN in completeRows_:
+			if len(completeRows_) != 0: # If there are some lines to clear
+				clearingLines = True
+				deadMinosAbove = []
 
-				# deadMinosInRow = [
-				# 	mino for mino in deadMinos
-				# 	if mino[1] == rowN
-				# 	]
+				for rowN in completeRows_:
+					deadMinosAbove += [
+						m for m in deadMinos
+						if (m[1] < rowN and
+							m[1] not in completeRows_ and
+							m not in deadMinosAbove)
+						]
 
-				deadMinosAbove = [
-					mino for mino in deadMinos
-					if mino[1] < rowN
-					]
+			lines += len(completeRows_)
 
-				# Remove the minos in the filled row from the field
-				deadMinos = [
-					mino for mino in deadMinos
-					if mino[1] != rowN
-					]
+			# if startLevel <= 9 and lines / 10 == level + 1:
+			if lines / 10 == level + 1:
+				level += 1
+			### TO DO: different transition lines for levels 9+
 
-				# Move all minos above the filled row down one line
-				for mino in deadMinosAbove:
-					# deadMinos.remove(mino)
-					mino[1] += 1
-					# deadMinos.append(mino)
+			# Calculate delay after tetrimino locks in place
+			lockPos = min(*[m[1] for m in tetrimino.minos])
+			ARE = 10 + (lockPos // 4) * 2 # Delay in frames
 
-		# Draw tetrimino, next piece and dead minos
-		tetrimino.draw(bg)
-		nextPiece.draw(bg)
-		for dead in deadMinos:
-			pixelPos = gridToPixelPos(dead[0], dead[1])
-			pygame.draw.rect(
-				bg, dead[2],
-				(pixelPos[0], pixelPos[1], c.cellSize, c.cellSize)
-				)
+		# Draw stuff
+		def drawAll():
+			bg.fill((0, 0, 0))
+			drawGrid(bg, (60, 60, 60))
 
-		# Update screen
-		screen.blit(bg, (0, 0))
-		pygame.display.flip()
+			tetrimino.draw(bg)
+			nextPiece.draw(bg)
 
-		frameCounter += 1
-		clock.tick(FPS)
+			for dead in deadMinos:
+				pixelPos = gridToPixelPos(dead[0], dead[1])
+				pygame.draw.rect(
+					bg, dead[2],
+					(pixelPos[0], pixelPos[1], c.cellSize, c.cellSize)
+					)
+
+			linesText = font.render(f"Lines: {lines}", True, c.WHITE)
+			bg.blit(linesText, (30, 100))
+			levelText = font.render(f"Level: {level}", True, c.WHITE)
+			bg.blit(levelText, (30, 150))
+
+			# Update screen
+			screen.blit(bg, (0, 0))
+			pygame.display.flip()
+
+		drawAll()
+
+		# Advance one frame
+		if ARE == 0:
+			frameCounter += 1
+			clock.tick(FPS)
+
+		# Delay after tetrimino locks in place
+		while ARE > 0:
+			frameCounter += 1
+			clock.tick(FPS)
+			ARE -= 1
+
+		# Clear complete lines
+		if clearingLines:
+			x = c.COLS // 2
+			while x >= 0:
+				if frameCounter % 4 == 0:
+					for rowN in completeRows_:
+						# Remove minos at position x and at COLS-x
+						minosToRemove = [
+							m for m in deadMinos
+							if (m[0] == x or m[0] == c.COLS - x) and
+								m[1] == rowN
+							]
+
+						deadMinos = [
+							m for m in deadMinos
+							if m not in minosToRemove
+							]
+					x -= 1
+
+					# Update display
+					drawAll()
+
+				frameCounter += 1
+				clock.tick(FPS)
+
+			clearingLines = False
+
+			# Move all minos above the filled rows down
+			for mino in deadMinosAbove:
+				displacement = 0
+				for rowN in completeRows_:
+					if mino[1] < rowN:
+						displacement += 1
+
+				mino[1] += displacement - 1
+
+			completeRows_ = []
+
+			# Move all minos above the filled row down one line
+			for mino in deadMinosAbove:
+				mino[1] += 1
 
 main()
