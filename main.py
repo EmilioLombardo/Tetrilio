@@ -186,6 +186,7 @@ def main():
 	ARE = 0 # Delay after tetrimino lands (in frames)
 
 	lines = 0
+	points = 0
 	startLevel = 15
 	level = startLevel # Controls falling speed
 	deadMinos = []
@@ -333,6 +334,8 @@ def main():
 
 			linesText = font.render(f"Lines: {lines}", True, c.WHITE)
 			bg.blit(linesText, (30, 100))
+			pointsText = font.render(f"{points}", True, c.WHITE)
+			bg.blit(pointsText, (500, 100))
 			levelText = font.render(f"Level: {level}", True, c.WHITE)
 			bg.blit(levelText, (30, 150))
 
@@ -378,6 +381,7 @@ def main():
 				frameCounter += 1
 				clock.tick(FPS)
 
+			points += c.clearPoints[len(completeRows_)] * (level + 1)
 			clearingLines = False
 
 			# Move all minos above the filled rows down

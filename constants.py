@@ -28,6 +28,9 @@ framesPerCell = [48, 43, 38, 33, 28, 23, 18, 13, 8, 6,
 
 spawnPos = [5, 0]
 
+# 1 line: 40 points, 2 lines: 300 points etc.
+clearPoints = [0, 40, 100, 300, 1200]
+
 PURPLE = (180, 40, 140)
 BLUE = (40, 80, 230)
 GREEN = (40, 225, 20)
