@@ -179,6 +179,8 @@ def main():
 	bg = bg.convert()
 	bg.fill((0, 0, 0))
 
+	paused = False
+	startDelay = 90 # Delay before first piece starts falling (in frames)
 	FPS = 60
 	clock = pygame.time.Clock()
 	frameCounter = 0
@@ -194,20 +196,48 @@ def main():
 	clearingLines = False
 
 	# Font
-	font = pygame.font.Font("DIN Alternate Bold.ttf", 28)
-
-	drawGrid(bg, (60, 60, 60))
+	bigFont = pygame.font.Font("DIN Alternate Bold.ttf", 28)
+	smallFont = pygame.font.Font("DIN Alternate Bold.ttf", 18)
 
 	# Create current and next tetrimino
 	nextPiece = Tetrimino(random.randint(0, 6), [13, 10])
-	nextPiece.draw(bg)
 	tetrimino = Tetrimino(random.randint(0, 6), c.spawnPos.copy())
-	# tetrimino.centrePos = c.spawnPos.copy()
-	tetrimino.draw(bg)
 
-	# Blit everything to the screen
-	screen.blit(bg, (0, 0))
-	pygame.display.flip()
+	# Function that draws everything
+	def drawAll():
+		bg.fill((0, 0, 0))
+		drawGrid(bg, (60, 60, 60))
+
+		nextPiece.draw(bg)
+
+		if not paused:
+			tetrimino.draw(bg)
+
+			# Draw all dead minos
+			for dead in deadMinos:
+				pixelPos = gridToPixelPos(dead[0], dead[1])
+				pygame.draw.rect(
+					bg, dead[2],
+					(pixelPos[0], pixelPos[1], c.cellSize, c.cellSize)
+					)
+
+		# Various text
+		linesText = bigFont.render(f"Lines: {lines}", True, c.WHITE)
+		pointsText = bigFont.render(f"{points}", True, c.WHITE)
+		levelText = bigFont.render(f"Level: {level}", True, c.WHITE)
+		pressToPauseText = smallFont.render(
+			f"Press SPACE to pause/unpause", True, c.GREY
+			)
+		bg.blit(linesText, (30, 100))
+		bg.blit(pointsText, (500, 100))
+		bg.blit(levelText, (30, 150))
+		bg.blit(pressToPauseText, (10, 690))
+
+		# Update screen
+		screen.blit(bg, (0, 0))
+		pygame.display.flip()
+
+	drawAll()
 
 	running = True
 	while running: # This is the game-loop
@@ -220,10 +250,19 @@ def main():
 				sys.exit()
 
 			elif (event.type == pygame.KEYDOWN and
-				  event.key == pygame.K_ESCAPE):
+				  event.key in [pygame.K_ESCAPE, pygame.K_p, pygame.K_RETURN]):
 				running = False
 				pygame.quit()
 				sys.exit()
+
+			# Pause game
+			elif (event.type == pygame.KEYDOWN and
+				  event.key == pygame.K_SPACE):
+				  paused = True if paused is False else False
+
+		if paused:
+			drawAll()
+			continue
 
 		# Shifting and rotation
 		for event in events:
@@ -261,26 +300,34 @@ def main():
 		# Manage DAS:
 		keys = pygame.key.get_pressed()
 
-		if keys[pygame.K_a]:
+		if keys[pygame.K_a]: # If LEFT is held
 			DAScounter += 1
 			if DAScounter == c.DAS:
 				tetrimino.shift("left", deadMinos)
 				DAScounter = c.DAS - c.ARR
 
-		if keys[pygame.K_d]:
+		if keys[pygame.K_d]: # If RIGHT is held
 			DAScounter += 1
 			if DAScounter == c.DAS:
 				tetrimino.shift("right", deadMinos)
 				DAScounter = c.DAS - c.ARR
 
-		# Make tetrimino fall
-		if frameCounter % c.framesPerCell[level] == 0:
-			tetrimino.fall(deadMinos)
-		# Faster drop holding S ###
-		elif keys[pygame.K_s] and frameCounter % 2 == 0:
+		# Make tetrimino fall:
+		if startDelay > 0:
+			pass
+
+		# Normal drop speed
+		elif frameCounter % c.framesPerCell[level] == 0:
 			tetrimino.fall(deadMinos)
 
+		# Faster drop if holding DOWN
+		elif keys[pygame.K_s] and frameCounter % 2 == 0:
+			tetrimino.fall(deadMinos)
+			points += 1
+
+		# Handle tetrimino landing
 		if tetrimino.landed == True:
+			# Add the tetrimino's minos to deadMinos
 			for m in tetrimino.minos:
 				deadMinos.append([m[0], m[1], tetrimino.colour])
 
@@ -291,7 +338,7 @@ def main():
 			# Spawn next piece beside the playing field
 			nextPiece = Tetrimino(random.randint(0, 6), [13, 10])
 
-			# Check for complete rows and clear them if present
+			# Check for complete rows
 			completeRows_ = completeRows(deadMinos).copy()
 
 			if len(completeRows_) != 0: # If there are some lines to clear
@@ -317,36 +364,12 @@ def main():
 			lockPos = min(*[m[1] for m in tetrimino.minos])
 			ARE = 10 + (lockPos // 4) * 2 # Delay in frames
 
-		# Draw stuff
-		def drawAll():
-			bg.fill((0, 0, 0))
-			drawGrid(bg, (60, 60, 60))
-
-			tetrimino.draw(bg)
-			nextPiece.draw(bg)
-
-			for dead in deadMinos:
-				pixelPos = gridToPixelPos(dead[0], dead[1])
-				pygame.draw.rect(
-					bg, dead[2],
-					(pixelPos[0], pixelPos[1], c.cellSize, c.cellSize)
-					)
-
-			linesText = font.render(f"Lines: {lines}", True, c.WHITE)
-			bg.blit(linesText, (30, 100))
-			pointsText = font.render(f"{points}", True, c.WHITE)
-			bg.blit(pointsText, (500, 100))
-			levelText = font.render(f"Level: {level}", True, c.WHITE)
-			bg.blit(levelText, (30, 150))
-
-			# Update screen
-			screen.blit(bg, (0, 0))
-			pygame.display.flip()
-
+		# Update screen
 		drawAll()
 
 		# Advance one frame
 		if ARE == 0:
+			startDelay -= 1 if startDelay > 0 else 0
 			frameCounter += 1
 			clock.tick(FPS)
 
@@ -384,16 +407,14 @@ def main():
 			points += c.clearPoints[len(completeRows_)] * (level + 1)
 			clearingLines = False
 
-			# Move all minos above the filled rows down
+			# Move all minos above the cleared rows down
 			for mino in deadMinosAbove:
 				displacement = 0
 				for rowN in completeRows_:
-					if mino[1] < rowN:
+					if mino[1] < rowN: # If mino is above cleared row
 						displacement += 1
 
-				mino[1] += displacement - 1
-
-			completeRows_ = []
+				mino[1] += displacement - 1 # idk why -1 but it works
 
 			# Move all minos above the filled row down one line
 			for mino in deadMinosAbove:

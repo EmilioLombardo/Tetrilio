@@ -4,8 +4,8 @@ pygame.init()
 displayInfo = pygame.display.Info()
 
 # width = displayInfo.current_w
-width = 640
 # height = displayInfo.current_h
+width = 640
 height = 720
 print(width, "x", height)
 
@@ -19,8 +19,9 @@ fieldPos = ( # (x, y) for top-left corner of playing field
 	)
 cellSize = fieldWidth // COLS
 
-DAS = 16 # Auto-shift delay (in frames)
+DAS = 16 # Delayed auto-shift (in frames)
 ARR = 6 # Auto repeat rate (in frames)
+
 # Falling speeds for different levels
 framesPerCell = [48, 43, 38, 33, 28, 23, 18, 13, 8, 6,
 	5, 5, 5, 4, 4, 4, 3, 3, 3, 2, 2,
@@ -39,6 +40,7 @@ RED = (230, 0, 0)
 ORANGE = (240, 150, 10)
 CYAN = (0, 200, 230)
 WHITE = (255, 255, 255)
+GREY = (130, 130, 130)
 
 colours = (PURPLE, BLUE, GREEN, YELLOW, RED, ORANGE, CYAN)
 
