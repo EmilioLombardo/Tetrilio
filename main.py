@@ -169,9 +169,9 @@ def main():
 
 	# Initialise screen
 	pygame.init()
-	flags = pygame.DOUBLEBUF #| pygame.FULLSCREEN
+	flags = pygame.DOUBLEBUF | pygame.FULLSCREEN
 	screen = pygame.display.set_mode((0, 0), flags)
-	screen = pygame.display.set_mode((c.width, c.height), flags)
+	# screen = pygame.display.set_mode((c.width, c.height), flags)
 	pygame.display.set_caption("Tetrilio")
 
 	# Fill background
@@ -228,10 +228,14 @@ def main():
 		pressToPauseText = smallFont.render(
 			f"Press SPACE to pause/unpause", True, c.GREY
 			)
-		bg.blit(linesText, (30, 100))
-		bg.blit(pointsText, (500, 100))
-		bg.blit(levelText, (30, 150))
-		bg.blit(pressToPauseText, (10, 690))
+		bg.blit(linesText,
+			(c.fieldPos[0] - 130, c.fieldPos[1] + 10))
+		bg.blit(pointsText,
+			(c.fieldPos[0] + c.fieldWidth + 30, c.fieldPos[1] + 10))
+		bg.blit(levelText,
+			(c.fieldPos[0] - 130, c.fieldPos[1] + 60))
+		bg.blit(pressToPauseText,
+			(10, c.height - 30))
 
 		# Update screen
 		screen.blit(bg, (0, 0))
