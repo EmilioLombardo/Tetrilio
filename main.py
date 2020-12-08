@@ -196,6 +196,7 @@ def main():
 	bg.fill((0, 0, 0))
 
 	paused = False
+	gameOver = False
 	startDelay = 90 # Delay before first piece starts falling (in frames)
 	FPS = 60
 	clock = pygame.time.Clock()
@@ -211,9 +212,9 @@ def main():
 	completeRows_ = []
 	clearingLines = False
 
-	# Font
-	bigFont = pygame.font.Font("DIN Alternate Bold.ttf", 28)
-	smallFont = pygame.font.Font("DIN Alternate Bold.ttf", 18)
+	# Fonts
+	bigFont = pygame.font.Font("ARCADE_N.ttf", 20)
+	smallFont = pygame.font.Font("ARCADE_N.ttf", 14)
 
 	# Create current and next tetrimino
 	nextPiece = Tetrimino(random.randint(0, 6), [13, 10])
@@ -238,18 +239,18 @@ def main():
 					)
 
 		# Various text
-		linesText = bigFont.render(f"Lines: {lines}", True, c.WHITE)
-		pointsText = bigFont.render(f"{points}", True, c.WHITE)
-		levelText = bigFont.render(f"Level: {level}", True, c.WHITE)
+		linesText = bigFont.render(f"Lines: {lines}", False, c.WHITE)
+		pointsText = bigFont.render(f"{points}", False, c.WHITE)
+		levelText = bigFont.render(f"Level: {level}", False, c.WHITE)
 		pressToPauseText = smallFont.render(
-			f"Press SPACE to pause/unpause", True, c.GREY
+			f"Press SPACE to pause/unpause", False, c.GREY
 			)
 		bg.blit(linesText,
-			(c.fieldPos[0] - 130, c.fieldPos[1] + 10))
+			(c.fieldPos[0] - 190, c.fieldPos[1] + 10))
 		bg.blit(pointsText,
 			(c.fieldPos[0] + c.fieldWidth + 30, c.fieldPos[1] + 10))
 		bg.blit(levelText,
-			(c.fieldPos[0] - 130, c.fieldPos[1] + 60))
+			(c.fieldPos[0] - 190, c.fieldPos[1] + 60))
 		bg.blit(pressToPauseText,
 			(10, c.height - 30))
 
@@ -349,6 +350,8 @@ def main():
 		if tetrimino.landed == True:
 			# Add the tetrimino's minos to deadMinos
 			for m in tetrimino.minos:
+				if m in [dead[:2] for dead in deadMinos]:
+					gameOver = True
 				deadMinos.append([m[0], m[1], tetrimino.colour])
 
 			# Spawn new tetrimino and next piece
@@ -388,12 +391,15 @@ def main():
 		# Update screen
 		drawAll()
 
+		while gameOver:
+			main()
+			gameOver = False
+
 		# Advance one frame
 		if ARE == 0:
 			startDelay -= 1 if startDelay > 0 else 0
 			frameCounter += 1
 			clock.tick(FPS)
-
 
 		# Delay after tetrimino locks in place
 		while ARE > 0:

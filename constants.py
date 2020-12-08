@@ -5,8 +5,8 @@ displayInfo = pygame.display.Info()
 
 width = displayInfo.current_w
 height = displayInfo.current_h
-# width = 640
-# height = 720
+width = 720
+height = 720
 print(width, "x", height)
 
 COLS = 10
