@@ -38,12 +38,18 @@ class Tetrimino:
 
 	def draw(self, surface):
 		mPixelCoords = array([gridToPixelPos(*m) for m in self.minos])
+
+		# Top left corner
 		x1 = min(mPixelCoords[:,0])
-		y1 = min(mPixelCoords[:,1])
+		y1 = min(mPixelCoords[:,1]) - 2 * c.cellSize
+
+		# Bottom right corner
 		x2 = max(mPixelCoords[:,0]) + c.cellSize
 		y2 = max(mPixelCoords[:,1]) + c.cellSize
+
 		w = x2 - x1
 		h = y2 - y1
+
 		dirtyRect = pygame.Rect(x1, y1, w, h)
 
 		if self.hidden:
@@ -238,38 +244,56 @@ def main():
 		bg.fill((0, 0, 0))
 		drawGrid(bg, (60, 60, 60))
 
-		nextPiece.draw(bg)
+		dirtyRects = []
+
+		dirtyRects.append(nextPiece.draw(bg))
 
 		if not paused:
-			tetrimino.draw(bg)
+			dirtyRects.append(tetrimino.draw(bg))
 
 			# Draw all dead minos
 			for dead in deadMinos:
 				pixelPos = gridToPixelPos(dead[0], dead[1])
-				pygame.draw.rect(
-					bg, dead[2],
-					(pixelPos[0], pixelPos[1], c.cellSize, c.cellSize)
+				dirtyRects.append(
+					pygame.draw.rect(
+						bg,
+						dead[2],
+						(pixelPos[0], pixelPos[1], c.cellSize, c.cellSize)
+						)
 					)
 
 		# Various text
-		linesText = bigFont.render(f"LINES {lines}", False, c.WHITE)
-		pointsText = bigFont.render(f"{points}", False, c.WHITE)
-		levelText = bigFont.render(f"LEVEL {level}", False, c.WHITE)
-		pressToPauseText = smallFont.render(
-			f"Press SPACE to pause/unpause", False, c.GREY
+		linesText = bigFont.render(
+			f"LINES {lines}", False, c.WHITE
 			)
-		bg.blit(linesText,
-			(c.fieldPos[0] - 220, c.fieldPos[1] + 10))
-		bg.blit(pointsText,
-			(c.fieldPos[0] + c.fieldWidth + 30, c.fieldPos[1] + 10))
-		bg.blit(levelText,
-			(c.fieldPos[0] - 220, c.fieldPos[1] + 60))
-		bg.blit(pressToPauseText,
-			(10, c.height - 30))
+		pointsText = bigFont.render(
+			f"{points}", False, c.WHITE
+			)
+		levelText = bigFont.render(
+			f"LEVEL {level}", False, c.WHITE
+			)
+		pressToPauseText = smallFont.render(
+			f"Press SPACE to pause and ESC to quit", False, c.GREY
+			)
+
+		dirtyRects.append(
+			bg.blit(linesText, (c.fieldPos[0] - 220, c.fieldPos[1] + 10))
+			)
+		dirtyRects.append(
+			bg.blit(pointsText,
+				(c.fieldPos[0] + c.fieldWidth + 30, c.fieldPos[1] + 10))
+			)
+		dirtyRects.append(
+			bg.blit(levelText, (c.fieldPos[0] - 220, c.fieldPos[1] + 60))
+			)
+		dirtyRects.append(
+			bg.blit(pressToPauseText, (10, c.height - 30))
+			)
 
 		# Update screen
 		screen.blit(bg, (0, 0))
-		pygame.display.flip()
+		pygame.display.update(dirtyRects)
+		# pygame.display.flip()
 
 	drawAll()
 
