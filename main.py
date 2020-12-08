@@ -208,6 +208,19 @@ def main():
 	points = 0
 	startLevel = 15
 	level = startLevel # Controls falling speed
+
+	# transition is the number of lines needed before the first level increase.
+	# After the transition, the level increases every 10 lines.
+	# (This replicates the NES version of tetris)
+	transition = min(
+		startLevel * 10 + 10,
+		max(100, (startLevel * 10 - 50))
+		)
+	# if startLevel <= 9:
+	# 	transition = startLevel * 10 + 10
+	# else:
+	# 	transition = max(100, (startLevel * 10 - 50))
+
 	deadMinos = []
 	completeRows_ = []
 	clearingLines = False
@@ -365,7 +378,7 @@ def main():
 			# Check for complete rows
 			completeRows_ = completeRows(deadMinos).copy()
 
-			if len(completeRows_) != 0: # If there are some lines to clear
+			if len(completeRows_) != 0: # If there are lines to clear
 				clearingLines = True
 				deadMinosAbove = []
 
@@ -378,11 +391,6 @@ def main():
 						]
 
 			lines += len(completeRows_)
-
-			# if startLevel <= 9 and lines / 10 == level + 1:
-			if lines / 10 == level + 1:
-				level += 1
-			### TO DO: different transition lines for levels 9+
 
 			# Calculate delay after tetrimino locks in place
 			lockPos = min(*[m[1] for m in tetrimino.minos])
@@ -452,6 +460,7 @@ def main():
 			for mino in deadMinosAbove:
 				mino[1] += 1
 
+			level = startLevel + max(0, 1 + (lines - transition) // 10)
 			tetrimino.hidden = False
 
 main()
