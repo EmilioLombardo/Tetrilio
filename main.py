@@ -239,18 +239,18 @@ def main():
 					)
 
 		# Various text
-		linesText = bigFont.render(f"Lines: {lines}", False, c.WHITE)
+		linesText = bigFont.render(f"LINES {lines}", False, c.WHITE)
 		pointsText = bigFont.render(f"{points}", False, c.WHITE)
-		levelText = bigFont.render(f"Level: {level}", False, c.WHITE)
+		levelText = bigFont.render(f"LEVEL {level}", False, c.WHITE)
 		pressToPauseText = smallFont.render(
 			f"Press SPACE to pause/unpause", False, c.GREY
 			)
 		bg.blit(linesText,
-			(c.fieldPos[0] - 190, c.fieldPos[1] + 10))
+			(c.fieldPos[0] - 220, c.fieldPos[1] + 10))
 		bg.blit(pointsText,
 			(c.fieldPos[0] + c.fieldWidth + 30, c.fieldPos[1] + 10))
 		bg.blit(levelText,
-			(c.fieldPos[0] - 190, c.fieldPos[1] + 60))
+			(c.fieldPos[0] - 220, c.fieldPos[1] + 60))
 		bg.blit(pressToPauseText,
 			(10, c.height - 30))
 
