@@ -37,13 +37,14 @@ class Tetrimino:
 			i += 1
 
 	def draw(self, surface):
-		mCoords = array([gridToPixelPos(*m) for m in self.minos])
-		dirtyRect = pygame.Rect(
-			min(mCoords[:,0]), # x1
-			min(mCoords[:,0]), # y1
-			max(mCoords[:,1]) + c.cellSize, # x2
-			max(mCoords[:,1]) + c.cellSize #  y2
-			)
+		mPixelCoords = array([gridToPixelPos(*m) for m in self.minos])
+		x1 = min(mPixelCoords[:,0])
+		y1 = min(mPixelCoords[:,1])
+		x2 = max(mPixelCoords[:,0]) + c.cellSize
+		y2 = max(mPixelCoords[:,1]) + c.cellSize
+		w = x2 - x1
+		h = y2 - y1
+		dirtyRect = pygame.Rect(x1, y1, w, h)
 
 		if self.hidden:
 			return dirtyRect
