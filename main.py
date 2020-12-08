@@ -2,26 +2,29 @@ import sys
 import random
 import pygame
 from pygame.locals import *
+from numpy import array
+
 
 import constants as c
 
 
 class Tetrimino:
-	def __init__(self, typeID, spawnPos):
+	def __init__(self, typeID, centrePos):
 		self.typeID = typeID
-		self.centrePos = spawnPos.copy()
+		self.centrePos = centrePos.copy()
 
 		self.landed = False
+		self.hidden = False
 
 		self.colour = c.colours[typeID]
 		self.orientations = c.allOrientations[typeID]
-		self.orientationIndex = 0 # The current orientation. 0 = spawn orientation
+		self.orientationIndex = 0 # The current orientation
 
 		self.minos = [ # 2D list with of x and y coordinates for each mino
 			[] for _ in range(len(self.orientations[self.orientationIndex]))
 			]
-		### Ex.: [[-1, 0], [0, 0], [1, 0], [0, 1]] for T-piece
 
+		# Fill in self.minos with appropriate coords
 		self.updateMinos()
 
 	# Update coords of minos according to orientation and centrePos
@@ -34,6 +37,16 @@ class Tetrimino:
 			i += 1
 
 	def draw(self, surface):
+		mCoords = array([gridToPixelPos(*m) for m in self.minos])
+		dirtyRect = pygame.Rect(
+			min(mCoords[:,0]), # x1
+			min(mCoords[:,0]), # y1
+			max(mCoords[:,1]) + c.cellSize, # x2
+			max(mCoords[:,1]) + c.cellSize #  y2
+			)
+
+		if self.hidden:
+			return dirtyRect
 
 		for m in self.minos:
 			pixelPos = gridToPixelPos(*m)
@@ -42,6 +55,8 @@ class Tetrimino:
 				surface, self.colour,
 				(pixelPos[0], pixelPos[1], c.cellSize, c.cellSize)
 				)
+
+		return dirtyRect
 
 	def fall(self, deadMinos):
 
@@ -254,14 +269,14 @@ def main():
 				sys.exit()
 
 			elif (event.type == pygame.KEYDOWN and
-				  event.key in [pygame.K_ESCAPE, pygame.K_p, pygame.K_RETURN]):
+				  event.key == pygame.K_ESCAPE):
 				running = False
 				pygame.quit()
 				sys.exit()
 
 			# Pause game
 			elif (event.type == pygame.KEYDOWN and
-				  event.key == pygame.K_SPACE):
+				  event.key in [pygame.K_SPACE, pygame.K_p, pygame.K_RETURN]):
 				  paused = True if paused is False else False
 
 		if paused:
@@ -335,11 +350,12 @@ def main():
 			for m in tetrimino.minos:
 				deadMinos.append([m[0], m[1], tetrimino.colour])
 
-			# Spawn new tetrimino at the top
+			# Spawn new tetrimino and next piece
 			tetrimino = nextPiece
-			tetrimino.centrePos = c.spawnPos.copy()
+			tetrimino.hidden = True
+			tetrimino.centrePos = c.spawnPos.copy() # Move to top
+			tetrimino.updateMinos()
 
-			# Spawn next piece beside the playing field
 			nextPiece = Tetrimino(random.randint(0, 6), [13, 10])
 
 			# Check for complete rows
@@ -377,36 +393,41 @@ def main():
 			frameCounter += 1
 			clock.tick(FPS)
 
+
 		# Delay after tetrimino locks in place
 		while ARE > 0:
+			if not clearingLines:
+				tetrimino.hidden = False
 			frameCounter += 1
 			clock.tick(FPS)
 			ARE -= 1
 
-		# Clear complete lines
+		# Clear completed lines
 		if clearingLines:
 			x = c.COLS // 2
 			while x >= 0:
-				if frameCounter % 4 == 0:
-					for rowN in completeRows_:
-						# Remove minos at position x and at COLS-x
-						minosToRemove = [
-							m for m in deadMinos
-							if (m[0] == x or m[0] == c.COLS - x) and
-								m[1] == rowN
-							]
-
-						deadMinos = [
-							m for m in deadMinos
-							if m not in minosToRemove
-							]
-					x -= 1
-
-					# Update display
-					drawAll()
-
 				frameCounter += 1
 				clock.tick(FPS)
+
+				if frameCounter % 4 != 0:
+					continue
+
+				for rowN in completeRows_:
+					# Remove minos at position x and at COLS-x
+					minosToRemove = [
+						m for m in deadMinos
+						if (m[0] == x or m[0] == c.COLS - x) and
+							m[1] == rowN
+						]
+
+					deadMinos = [
+						m for m in deadMinos
+						if m not in minosToRemove
+						]
+				x -= 1
+
+				# Update display
+				drawAll()
 
 			points += c.clearPoints[len(completeRows_)] * (level + 1)
 			clearingLines = False
@@ -423,5 +444,7 @@ def main():
 			# Move all minos above the filled row down one line
 			for mino in deadMinosAbove:
 				mino[1] += 1
+
+			tetrimino.hidden = False
 
 main()
