@@ -57,11 +57,9 @@ class Tetrimino:
 
 		for m in self.minos:
 			pixelPos = gridToPixelPos(*m)
+			box = (pixelPos[0], pixelPos[1], c.cellSize, c.cellSize)
 
-			pygame.draw.rect(
-				surface, self.colour,
-				(pixelPos[0], pixelPos[1], c.cellSize, c.cellSize)
-				)
+			pygame.draw.rect(surface, self.colour, box)
 
 		return dirtyRect
 
@@ -174,6 +172,7 @@ def drawGrid(surface, colour):
 		y += c.cellSize
 
 def completeRows(deadMinos):
+	# Returns a list of all rows that are filled in
 
 	completeRows = []
 
@@ -183,7 +182,6 @@ def completeRows(deadMinos):
 		if len(deadMinosInRow) >= c.COLS:
 			completeRows.append(rowN)
 
-	# Returns a list of which rows are fillled in
 	return completeRows
 
 
@@ -222,10 +220,6 @@ def main():
 		startLevel * 10 + 10,
 		max(100, (startLevel * 10 - 50))
 		)
-	# if startLevel <= 9:
-	# 	transition = startLevel * 10 + 10
-	# else:
-	# 	transition = max(100, (startLevel * 10 - 50))
 
 	deadMinos = []
 	completeRows_ = []
@@ -293,7 +287,6 @@ def main():
 		# Update screen
 		screen.blit(bg, (0, 0))
 		pygame.display.update(dirtyRects)
-		# pygame.display.flip()
 
 	drawAll()
 
@@ -319,7 +312,7 @@ def main():
 				  paused = True if paused is False else False
 
 		if paused:
-			drawAll()
+			clock.tick(FPS)
 			continue
 
 		# Shifting and rotation
@@ -385,22 +378,22 @@ def main():
 
 		# Handle tetrimino landing
 		if tetrimino.landed == True:
-			# Add the tetrimino's minos to deadMinos
+
 			for m in tetrimino.minos:
+				# If the tetrimino overlaps any dead minos -> game over :o
 				if m in [dead[:2] for dead in deadMinos]:
 					gameOver = True
+
+				# Add the tetrimino's minos to deadMinos
 				deadMinos.append([m[0], m[1], tetrimino.colour])
 
-			# Spawn new tetrimino and next piece
-			tetrimino = nextPiece
+			# Spawn new tetrimino
+			tetrimino = Tetrimino(nextPiece.typeID, c.spawnPos.copy())
+			tetrimino.landed = True
 			tetrimino.hidden = True
-			tetrimino.centrePos = c.spawnPos.copy() # Move to top
-			tetrimino.updateMinos()
-
-			nextPiece = Tetrimino(random.randint(0, 6), [13, 10])
 
 			# Check for complete rows
-			completeRows_ = completeRows(deadMinos).copy()
+			completeRows_ = completeRows(deadMinos)
 
 			if len(completeRows_) != 0: # If there are lines to clear
 				clearingLines = True
@@ -422,6 +415,7 @@ def main():
 
 		# Update screen
 		drawAll()
+		tetrimino.landed = False
 
 		while gameOver:
 			main()
@@ -435,11 +429,15 @@ def main():
 
 		# Delay after tetrimino locks in place
 		while ARE > 0:
-			if not clearingLines:
-				tetrimino.hidden = False
+			drawAll()
 			frameCounter += 1
 			clock.tick(FPS)
 			ARE -= 1
+
+			# After delay, show new tetrimino and spawn nextPiece
+			if ARE == 0 and not clearingLines:
+				tetrimino.hidden = False
+				nextPiece = Tetrimino(random.randint(0, 6), [13, 10])
 
 		# Clear completed lines
 		if clearingLines:
@@ -485,6 +483,9 @@ def main():
 				mino[1] += 1
 
 			level = startLevel + max(0, 1 + (lines - transition) // 10)
+
+			# After line clear animation, show new tetrimino & spawn nextPiece
 			tetrimino.hidden = False
+			nextPiece = Tetrimino(random.randint(0, 6), [13, 10])
 
 main()
