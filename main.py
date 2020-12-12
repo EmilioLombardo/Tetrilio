@@ -211,11 +211,11 @@ def main():
 	lines = 0
 	points = 0
 	startLevel = 15
-	level = startLevel # Controls falling speed
+	level = startLevel # Controls falling speed and point bonuses
 
-	# transition is the number of lines needed before the first level increase.
+	# "transition" is the lines needed before the first level increase.
 	# After the transition, the level increases every 10 lines.
-	# (This replicates the NES version of tetris)
+	# (This implementation replicates the NES version of tetris)
 	transition = min(
 		startLevel * 10 + 10,
 		max(100, (startLevel * 10 - 50))
