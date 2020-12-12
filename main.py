@@ -417,7 +417,7 @@ def main():
 		drawAll()
 		tetrimino.landed = False
 
-		while gameOver:
+		if gameOver:
 			main()
 			gameOver = False
 
