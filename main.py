@@ -476,11 +476,7 @@ def main():
 					if mino[1] < rowN: # If mino is above cleared row
 						displacement += 1
 
-				mino[1] += displacement - 1 # idk why -1 but it works
-
-			# Move all minos above the filled row down one line
-			for mino in deadMinosAbove:
-				mino[1] += 1
+				mino[1] += displacement
 
 			level = startLevel + max(0, 1 + (lines - transition) // 10)
 
